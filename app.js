@@ -41,6 +41,8 @@ function promptMainMenu() {
       },
     ])
     .then(async ({ selectMain }) => {
+      const departments = await get.departments();
+
       switch (selectMain) {
         case 'View All Departments':
           print.departments();
@@ -59,11 +61,19 @@ function promptMainMenu() {
           promptManagerMenu(managers);
           break;
         case 'View Employees by Department':
-          const departments = await get.departments();
           promptDepartmentMenu(departments);
           break;
         case 'View Total Utilized Budget per Department':
           print.totalUtilizedBudget();
+          break;
+        case 'Add a Department':
+          promptNewDepartment();
+          break;
+        case 'Add a Role':
+          promptNewRole(departments);
+          break;
+        case 'Add an Employee':
+          promptNewEmployee(departments);
           break;
       }
     });
@@ -89,7 +99,6 @@ function promptManagerMenu(managers) {
 }
 
 function promptDepartmentMenu(departments) {
-  console.log(departments);
   inquirer
     .prompt([
       {
@@ -105,6 +114,154 @@ function promptDepartmentMenu(departments) {
       const departmentId = parseInt(selectDepartment.split(':')[0]);
       print.employeesByDepartment(departmentId);
       promptMainMenu();
+    });
+}
+
+function promptNewDepartment() {
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Enter the name of the department:',
+        validate(name) {
+          if (name.length <= 0) {
+            return 'Department name is required.';
+          } else {
+            return true;
+          }
+        },
+      },
+    ])
+    .then((department) => {
+      insert.department(department.name);
+      promptMainMenu();
+    });
+}
+
+function promptNewRole(departments) {
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'title',
+        message: 'Enter the title of the role:',
+        validate(title) {
+          if (title.length <= 0) {
+            return 'Role title is required.';
+          } else {
+            return true;
+          }
+        },
+      },
+      {
+        type: 'input',
+        name: 'salary',
+        message: `Enter the role's salary:`,
+        validate(salary) {
+          if (isNaN(salary) || salary <= 0) {
+            return 'Salary must be an integer.';
+          } else {
+            return true;
+          }
+        },
+      },
+      {
+        type: 'list',
+        name: 'department',
+        message: `Enter the department the role belongs to:`,
+        choices: departments.map(
+          (department) => `${department.id}: ${department.name}`
+        ),
+      },
+    ])
+    .then((role) => {
+      const departmentId = parseInt(role.department.split(':')[0]);
+      insert.role(role.title, role.salary, departmentId);
+      promptMainMenu();
+    });
+}
+
+function promptNewEmployee(departments) {
+  let employee = {};
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'first_name',
+        message: "Enter the employee's first name:",
+        validate(first_name) {
+          if (first_name.length <= 0) {
+            return 'First name is required.';
+          } else {
+            return true;
+          }
+        },
+      },
+      {
+        type: 'input',
+        name: 'last_name',
+        message: "Enter the employee's last name:",
+        validate(last_name) {
+          if (last_name.length <= 0) {
+            return 'Last name is required.';
+          } else {
+            return true;
+          }
+        },
+      },
+      {
+        type: 'list',
+        name: 'department_id',
+        message: `Enter the department the employee belongs to:`,
+        choices: departments.map(
+          (department) => `${department.id}: ${department.name}`
+        ),
+      },
+    ])
+    .then(async (answers) => {
+      employee = {
+        first_name: answers.first_name,
+        last_name: answers.last_name,
+      };
+      const department_id = parseInt(answers.department_id.split(':')[0]);
+      const roles = await get.rolesByDepartment(department_id);
+      const possibleManagers = await get.employeesByDepartment(department_id);
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'role_id',
+            message: `Enter the role of the employee:`,
+            choices: roles.map((role) => `${role.id}: ${role.title}`),
+          },
+          {
+            type: 'list',
+            name: 'manager_id',
+            message: `Enter the name of the employee's manager:`,
+            choices: [
+              possibleManagers.map(
+                (manager) => `${manager.id}: ${manager.name}`
+              ),
+              'No manager',
+            ].flat(),
+          },
+        ])
+        .then(async ({ role_id, manager_id }) => {
+          employee.role_id = parseInt(role_id.split(':')[0]);
+          if ((manager_id = 'No manager')) {
+            employee.manager_id = null;
+          } else {
+            employee.manager_id = parseInt(manager_id.split(':')[0]);
+          }
+          insert.employee(
+            employee.first_name,
+            employee.last_name,
+            employee.role_id,
+            employee.manager_id
+          );
+          promptMainMenu();
+        });
     });
 }
 

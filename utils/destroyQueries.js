@@ -3,9 +3,13 @@ const chalk = require('chalk');
 
 const highlight = chalk.keyword('magenta');
 
-// DELETE DEPARTMENT
-async function department(id) {
-  const sql = `delete from departments where id = ?`;
+// convert string to camel case
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+async function fromTable(target, id) {
+  const sql = `delete from ${target + 's'} where id = ?`;
   const params = id;
   await db
     .promise()
@@ -14,7 +18,7 @@ async function department(id) {
       console.log(`
 
 ------------------------------
-${highlight('Success!')} Department Deleted from Database
+${highlight('Success!')} ${capitalize(target)} Deleted from Database
 Press UP or DOWN to return to the Main Menu.
 ------------------------------
 `);
@@ -22,42 +26,4 @@ Press UP or DOWN to return to the Main Menu.
     .catch(console.log);
 }
 
-// DELETE ROLE
-async function role(id) {
-  const sql = `delete from roles where id = ?`;
-  const params = id;
-  await db
-    .promise()
-    .query(sql, params)
-    .then(([rows, fields]) => {
-      console.log(`
-
-------------------------------
-${highlight('Success!')} Role Deleted from Database
-Press UP or DOWN to return to the Main Menu.
-------------------------------
-`);
-    })
-    .catch(console.log);
-}
-
-// DELETE EMPLOYEE
-async function employee(id) {
-  const sql = `delete from employees where id = ?`;
-  const params = id;
-  await db
-    .promise()
-    .query(sql, params)
-    .then(([rows, fields]) => {
-      console.log(`
-
-------------------------------
-${highlight('Success!')} Employee Deleted from Database
-Press UP or DOWN to return to the Main Menu.
-------------------------------
-`);
-    })
-    .catch(console.log);
-}
-
-module.exports = { department, role, employee };
+module.exports = { fromTable };

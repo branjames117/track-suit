@@ -398,7 +398,7 @@ function promptDeleteDepartment(departments) {
     ])
     .then((answers) => {
       const departmentId = parseInt(answers.department_id.split(':')[0]);
-      destroy.department(departmentId);
+      destroy.fromTable('department', departmentId);
       promptMainMenu();
     });
 }
@@ -428,7 +428,7 @@ function promptDeleteRole(departments) {
         ])
         .then((answers) => {
           const roleId = parseInt(answers.role_id.split(':')[0]);
-          destroy.role(roleId);
+          destroy.fromTable('role', roleId);
 
           promptMainMenu();
         });
@@ -460,7 +460,7 @@ function promptDeleteEmployee(departments) {
         ])
         .then((answers) => {
           const employeeId = parseInt(answers.employee_id.split(':')[0]);
-          destroy.employee(employeeId);
+          destroy.fromTable('employee', employeeId);
 
           promptMainMenu();
         });

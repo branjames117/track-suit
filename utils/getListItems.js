@@ -17,4 +17,38 @@ async function managers() {
   return rowsArr;
 }
 
-module.exports = { managers };
+// get all departments
+async function departments() {
+  const sql = `select * from departments`;
+
+  let rowsArr = [];
+
+  await db
+    .promise()
+    .query(sql)
+    .then(([rows, fields]) => {
+      rowsArr = rows;
+    })
+    .catch(console.log);
+
+  return rowsArr;
+}
+
+async function rolesByDepartment(department_id) {
+  const sql = `select roles.title from roles left join departments on roles.department_id = departments.id where departments.id = ??`;
+  const params = department_id;
+
+  let rowsArr = [];
+
+  await db
+    .promise()
+    .query(sql, params)
+    .then(([rows, fields]) => {
+      rowsArr = rows;
+    })
+    .catch(console.log);
+
+  return rowsArr;
+}
+
+module.exports = { managers, departments };

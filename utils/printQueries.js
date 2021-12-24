@@ -64,6 +64,12 @@ function employeesByManager(manager_id) {
 Viewing All Employees by One Manager
 ------------------------------`);
     console.table(rows);
+    console.log(`
+    
+    
+    
+    
+    `);
   });
 }
 

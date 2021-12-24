@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const print = require('./utils/printQueries');
+const insert = require('./utils/insertQueries');
 const get = require('./utils/getListItems');
 
 const highlight = chalk.keyword('magenta');
@@ -57,6 +58,13 @@ function promptMainMenu() {
           const managers = await get.managers();
           promptManagerMenu(managers);
           break;
+        case 'View Employees by Department':
+          const departments = await get.departments();
+          promptDepartmentMenu(departments);
+          break;
+        case 'View Total Utilized Budget per Department':
+          print.totalUtilizedBudget();
+          break;
       }
     });
 }
@@ -76,6 +84,26 @@ function promptManagerMenu(managers) {
     .then(({ selectManager }) => {
       const managerId = parseInt(selectManager.split(':')[0]);
       print.employeesByManager(managerId);
+      promptMainMenu();
+    });
+}
+
+function promptDepartmentMenu(departments) {
+  console.log(departments);
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'selectDepartment',
+        message: 'View employees under which department?',
+        choices: departments.map(
+          (department) => `${department.id}: ${department.name}`
+        ),
+      },
+    ])
+    .then(({ selectDepartment }) => {
+      const departmentId = parseInt(selectDepartment.split(':')[0]);
+      print.employeesByDepartment(departmentId);
       promptMainMenu();
     });
 }

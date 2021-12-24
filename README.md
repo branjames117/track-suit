@@ -12,27 +12,36 @@ When the application is started, the following options are presented:
   `select * from departments;`
 
 - view all roles
-  `select roles.title, roles.id, departments.name as department_name, roles.salary from roles left join departments on roles.department_id = departments.id;`
+  `select roles.title, roles.id, departments.name as department_name, concat('$', format(roles.salary, 0)) as salary from roles left join departments on roles.department_id = departments.id;`
 
 - view all employees
-  `select a.id, a.first_name, a.last_name, roles.title, roles.salary, departments.name as department, concat(b.first_name, ' ', b.last_name) as manager from employees a left join employees b on a.manager_id = b.id left join roles on a.role_id = roles.id left join departments on roles.department_id = departments.id;`
+  `select a.id, a.first_name, a.last_name, roles.title, concat('$', format(roles.salary, 0)) as salary, departments.name as department, concat(b.first_name, ' ', b.last_name) as manager from employees a left join employees b on a.manager_id = b.id left join roles on a.role_id = roles.id left join departments on roles.department_id = departments.id;`
 
 - view employees by manager (bonus)
   `select distinct concat(b.first_name, ' ', b.last_name) as manager from employees a left join employees b on a.manager_id = b.id;`
 
 - view employees by department (bonus)
-  `select id from roles where department_id = 1` to get roles in that department, then send that result to `select * from employees where role_id in (1, 2);`
+  `select * from employees where role_id in (select id from roles where department_id = 1);`
 
 - view total utilized budget per department (bonus)
+  `select departments.name as department, concat('$', format(sum(roles.salary), 0)) as 'total utilized budget' from employees left join roles on employees.role_id = roles.id left join departments on roles.department_id = departments.id group by departments.name;`
 
 - add a department
+  `insert into departments(department_name) values ('International Subterfuge')`
 - delete a department (bonus)
+  `delete from departments where id = 1`
 - add a role
+  `insert into roles(title, salary, department_id) values ('Runner', 50000, 1)`
 - delete a role (bonus)
+  `delete from roles where id = 1`
 - add an employee
+  `insert into employees(first_name, last_name, role_id, manager_id) values ('James', 'Bond', 1, NULL)`
 - delete an employee (bonus)
+  `delete from employees where id = 1`
 - update an employee role
+  `update employees set role_id = 1 where id = 1`
 - update an employee's manager (bonus)
+  `update employees set manager_id = 1 where id = 1`
 
 When choosing to view all departments, a formatted table is presented showing the department names and ids.
 

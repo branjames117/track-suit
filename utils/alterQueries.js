@@ -1,10 +1,11 @@
 const db = require('../db/connection');
+const capitalize = require('./capitalize');
 const chalk = require('chalk');
 
 const highlight = chalk.keyword('magenta');
 
-async function role(employee_id, role_id) {
-  const sql = `update employees set role_id = ? where id = ?`;
+async function byColumn(col_name, employee_id, role_id) {
+  const sql = `update employees set ${col_name + '_id'} = ? where id = ?`;
   const params = [role_id, employee_id];
   await db
     .promise()
@@ -13,7 +14,7 @@ async function role(employee_id, role_id) {
       console.log(`
 
 ------------------------------
-${highlight('Success!')} Employee Role Altered
+${highlight('Success!')} Employee ${capitalize(col_name)} Altered
 Press UP or DOWN to return to the Main Menu.
 ------------------------------
 `);
@@ -21,22 +22,4 @@ Press UP or DOWN to return to the Main Menu.
     .catch(console.log);
 }
 
-async function manager(employee_id, manager_id) {
-  const sql = `update employees set manager_id = ? where id = ?`;
-  const params = [manager_id, employee_id];
-  await db
-    .promise()
-    .query(sql, params)
-    .then(([rows, fields]) => {
-      console.log(`
-
-------------------------------
-${highlight('Success!')} Employee Manager Altered
-Press UP or DOWN to return to the Main Menu.
-------------------------------
-`);
-    })
-    .catch(console.log);
-}
-
-module.exports = { role, manager };
+module.exports = { byColumn };

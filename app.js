@@ -329,7 +329,11 @@ function promptAlterRole(departments) {
           },
         ])
         .then(({ role_id }) => {
-          alter.role(parseInt(employee_id), parseInt(role_id.split(':')[0]));
+          alter.byColumn(
+            'role',
+            parseInt(employee_id),
+            parseInt(role_id.split(':')[0])
+          );
 
           promptMainMenu();
         });
@@ -378,7 +382,7 @@ function promptAlterManager(departments) {
               ? null
               : parseInt(manager_id.split(':')[0]);
 
-          alter.manager(parseInt(employee_id), manager_id);
+          alter.byColumn('manager', parseInt(employee_id), manager_id);
 
           promptMainMenu();
         });

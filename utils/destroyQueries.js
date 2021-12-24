@@ -1,12 +1,8 @@
 const db = require('../db/connection');
+const capitalize = require('./capitalize');
 const chalk = require('chalk');
 
 const highlight = chalk.keyword('magenta');
-
-// convert string to camel case
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
 
 async function fromTable(target, id) {
   const sql = `delete from ${target + 's'} where id = ?`;

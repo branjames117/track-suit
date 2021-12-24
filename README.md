@@ -22,6 +22,8 @@ Download the source files for the application with `git clone <src>`, then insta
 
 In db/connection.js, change the password of the MySQL connection to whatever your local password is. From the MySQL shell, run `source db/db.sql`, then `source db/schema.sql` to create the database architecture. For sample data, run `source db/seeds.sql`. Run the app with `node app`.
 
+For a video demonstration of this app, visit [here](https://watch.screencastify.com/v/6unqrXmYshJEoGBj01gd).
+
 ## License
 
 [The MIT License](https://mit-license.org/)

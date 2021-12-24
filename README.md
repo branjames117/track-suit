@@ -24,6 +24,8 @@ In db/connection.js, change the password of the MySQL connection to whatever you
 
 For a video demonstration of this app, visit [here](https://watch.screencastify.com/v/6unqrXmYshJEoGBj01gd).
 
+![Screenshot](./assets/screenshot.jpg)
+
 ## License
 
 [The MIT License](https://mit-license.org/)

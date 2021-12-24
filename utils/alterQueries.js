@@ -1,4 +1,7 @@
 const db = require('../db/connection');
+const chalk = require('chalk');
+
+const highlight = chalk.keyword('magenta');
 
 async function role(employee_id, role_id) {
   const sql = `update employees set role_id = ? where id = ?`;
@@ -8,9 +11,12 @@ async function role(employee_id, role_id) {
     .query(sql, params)
     .then(([rows, fields]) => {
       console.log(`
+
 ------------------------------
-Employee Role Altered
-------------------------------`);
+${highlight('Success!')} Employee Role Altered
+Press UP or DOWN to return to the Main Menu.
+------------------------------
+`);
     })
     .catch(console.log);
 }
@@ -23,9 +29,12 @@ async function manager(employee_id, manager_id) {
     .query(sql, params)
     .then(([rows, fields]) => {
       console.log(`
+
 ------------------------------
-Employee Manager Altered
-------------------------------`);
+${highlight('Success!')} Employee Manager Altered
+Press UP or DOWN to return to the Main Menu.
+------------------------------
+`);
     })
     .catch(console.log);
 }

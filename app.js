@@ -8,7 +8,7 @@ const destroy = require('./utils/destroyQueries');
 
 const highlight = chalk.keyword('magenta');
 
-// greet the user
+// GREET THE USER
 console.log(`------------------------------
 ${highlight('Welcome to TRACK SUIT')}
 
@@ -17,6 +17,7 @@ Your All-in-One Employee Management System
 Let's get started
 ------------------------------`);
 
+// DISPLAY THE MAIN MENU
 function promptMainMenu() {
   inquirer
     .prompt([
@@ -43,6 +44,7 @@ function promptMainMenu() {
       },
     ])
     .then(async ({ selectMain }) => {
+      // fetch all current departments as this data is useful throughout the rest of the prompts
       const departments = await get.departments();
 
       switch (selectMain) {
@@ -67,6 +69,7 @@ function promptMainMenu() {
           break;
         case 'View Total Utilized Budget per Department':
           print.totalUtilizedBudget();
+          promptMainMenu();
           break;
         case 'Add a Department':
           promptNewDepartment();
@@ -96,6 +99,7 @@ function promptMainMenu() {
     });
 }
 
+// VIEW EMPLOYEES BY MANAGER MENU
 function promptManagerMenu(managers) {
   inquirer
     .prompt([
@@ -103,18 +107,18 @@ function promptManagerMenu(managers) {
         type: 'list',
         name: 'selectManager',
         message: 'View employees under which manager?',
-        choices: managers.map(
-          (manager) => `${manager.id}: ${manager['manager name']}`
-        ),
+        choices: managers,
       },
     ])
     .then(({ selectManager }) => {
       const managerId = parseInt(selectManager.split(':')[0]);
       print.employeesByManager(managerId);
+
       promptMainMenu();
     });
 }
 
+// VIEW EMPLOYEES BY DEPARTMENT MENU
 function promptDepartmentMenu(departments) {
   inquirer
     .prompt([
@@ -122,18 +126,18 @@ function promptDepartmentMenu(departments) {
         type: 'list',
         name: 'selectDepartment',
         message: 'View employees under which department?',
-        choices: departments.map(
-          (department) => `${department.id}: ${department.name}`
-        ),
+        choices: departments,
       },
     ])
     .then(({ selectDepartment }) => {
       const departmentId = parseInt(selectDepartment.split(':')[0]);
       print.employeesByDepartment(departmentId);
+
       promptMainMenu();
     });
 }
 
+// CREATE NEW DEPARTMENT MENU
 function promptNewDepartment() {
   inquirer
     .prompt([
@@ -152,10 +156,12 @@ function promptNewDepartment() {
     ])
     .then((department) => {
       insert.department(department.name);
+
       promptMainMenu();
     });
 }
 
+// CREATE NEW ROLE MENU
 function promptNewRole(departments) {
   inquirer
     .prompt([
@@ -187,20 +193,23 @@ function promptNewRole(departments) {
         type: 'list',
         name: 'department',
         message: `Enter the department the role belongs to:`,
-        choices: departments.map(
-          (department) => `${department.id}: ${department.name}`
-        ),
+        choices: departments,
       },
     ])
-    .then((role) => {
-      const departmentId = parseInt(role.department.split(':')[0]);
-      insert.role(role.title, role.salary, departmentId);
+    .then(({ title, salary, department }) => {
+      const departmentId = parseInt(department.split(':')[0]);
+      insert.role(title, salary, departmentId);
+
       promptMainMenu();
     });
 }
 
+// CREATE NEW EMPLOYEE MENU
 function promptNewEmployee(departments) {
+  // begin with an empty object so we can grow it over nested inquirer prompts
   let employee = {};
+
+  // begin first round of questions (first and last name and department)
   inquirer
     .prompt([
       {
@@ -231,59 +240,60 @@ function promptNewEmployee(departments) {
         type: 'list',
         name: 'department_id',
         message: `Enter the department the employee belongs to:`,
-        choices: departments.map(
-          (department) => `${department.id}: ${department.name}`
-        ),
+        choices: departments,
       },
     ])
-    .then(async (answers) => {
+    .then(async ({ first_name, last_name, department_id }) => {
+      // update employee object
       employee = {
-        first_name: answers.first_name,
-        last_name: answers.last_name,
+        first_name,
+        last_name,
       };
-      const department_id = parseInt(answers.department_id.split(':')[0]);
-      const roles = await get.rolesByDepartment(department_id);
-      const possibleManagers = await get.employeesByDepartment(department_id);
+
+      // set data for next round of questions
+      const departmentId = parseInt(department_id.split(':')[0]);
+      const roles = await get.rolesByDepartment(departmentId);
+      const possibleManagers = await get.employeesByDepartment(departmentId);
+
+      // begin second round of questions
       inquirer
         .prompt([
           {
             type: 'list',
             name: 'role_id',
             message: `Enter the role of the employee:`,
-            choices: roles.map((role) => `${role.id}: ${role.title}`),
+            choices: roles,
           },
           {
             type: 'list',
             name: 'manager_id',
             message: `Enter the name of the employee's manager:`,
-            choices: [
-              possibleManagers.map(
-                (manager) => `${manager.id}: ${manager.name}`
-              ),
-              'No manager',
-            ].flat(),
+            choices: [possibleManagers, 'No manager'].flat(),
           },
         ])
         .then(async ({ role_id, manager_id }) => {
+          // update employee object once more
           employee.role_id = parseInt(role_id.split(':')[0]);
-          if ((manager_id = 'No manager')) {
-            employee.manager_id = null;
-          } else {
-            employee.manager_id = parseInt(manager_id.split(':')[0]);
-          }
+
+          employee.manager_id =
+            manager_id === 'No manager'
+              ? null
+              : parseInt(manager_id.split(':')[0]);
+
           insert.employee(
             employee.first_name,
             employee.last_name,
             employee.role_id,
             employee.manager_id
           );
+
           promptMainMenu();
         });
     });
 }
 
+// ALTER EMPLOYEE'S ROLE MENU
 function promptAlterRole(departments) {
-  let employee_id;
   inquirer
     .prompt([
       {
@@ -302,33 +312,32 @@ function promptAlterRole(departments) {
         type: 'list',
         name: 'department_id',
         message: "Enter employee's department:",
-        choices: departments.map(
-          (department) => `${department.id}: ${department.name}`
-        ),
+        choices: departments,
       },
     ])
-    .then(async (answers) => {
-      employee_id = answers.id;
-      const department_id = parseInt(answers.department_id.split(':')[0]);
-      const roles = await get.rolesByDepartment(department_id);
+    .then(async ({ id, department_id }) => {
+      const employee_id = id;
+      const departmentId = parseInt(department_id.split(':')[0]);
+      const roles = await get.rolesByDepartment(departmentId);
       inquirer
         .prompt([
           {
             type: 'list',
             name: 'role_id',
             message: "Enter employee's new role:",
-            choices: roles.map((role) => `${role.id}: ${role.title}`),
+            choices: roles,
           },
         ])
         .then(({ role_id }) => {
           alter.role(parseInt(employee_id), parseInt(role_id.split(':')[0]));
+
           promptMainMenu();
         });
     });
 }
 
+// ALTER EMPLOYEE'S MANAGER MENU
 function promptAlterManager(departments) {
-  let employee_id;
   inquirer
     .prompt([
       {
@@ -347,39 +356,36 @@ function promptAlterManager(departments) {
         type: 'list',
         name: 'department_id',
         message: "Select employee's department:",
-        choices: departments.map(
-          (department) => `${department.id}: ${department.name}`
-        ),
+        choices: departments,
       },
     ])
-    .then(async (answers) => {
-      employee_id = answers.id;
-      const department_id = parseInt(answers.department_id.split(':')[0]);
-      const possibleManagers = await get.employeesByDepartment(department_id);
+    .then(async ({ id, department_id }) => {
+      const employee_id = id;
+      const departmentId = parseInt(department_id.split(':')[0]);
+      const possibleManagers = await get.employeesByDepartment(departmentId);
       inquirer
         .prompt([
           {
             type: 'list',
             name: 'manager_id',
             message: "Select employee's new manager:",
-            choices: [
-              possibleManagers.map(
-                (manager) => `${manager.id}: ${manager.name}`
-              ),
-              'No manager',
-            ].flat(),
+            choices: [possibleManagers, 'No manager'].flat(),
           },
         ])
         .then(({ manager_id }) => {
-          alter.manager(
-            parseInt(employee_id),
-            parseInt(manager_id.split(':')[0])
-          );
+          manager_id =
+            manager_id === 'No manager'
+              ? null
+              : parseInt(manager_id.split(':')[0]);
+
+          alter.manager(parseInt(employee_id), manager_id);
+
           promptMainMenu();
         });
     });
 }
 
+// DELETE DEPARTMENT MENU
 function promptDeleteDepartment(departments) {
   inquirer
     .prompt([
@@ -387,9 +393,7 @@ function promptDeleteDepartment(departments) {
         type: 'list',
         name: 'department_id',
         message: 'Select department to delete:',
-        choices: departments.map(
-          (department) => `${department.id}: ${department.name}`
-        ),
+        choices: departments,
       },
     ])
     .then((answers) => {
@@ -399,6 +403,7 @@ function promptDeleteDepartment(departments) {
     });
 }
 
+// DELETE ROLE MENU
 function promptDeleteRole(departments) {
   inquirer
     .prompt([
@@ -406,9 +411,7 @@ function promptDeleteRole(departments) {
         type: 'list',
         name: 'department_id',
         message: 'Select department of role to be deleted:',
-        choices: departments.map(
-          (department) => `${department.id}: ${department.name}`
-        ),
+        choices: departments,
       },
     ])
     .then(async (answers) => {
@@ -420,17 +423,19 @@ function promptDeleteRole(departments) {
             type: 'list',
             name: 'role_id',
             message: 'Select role to be deleted:',
-            choices: roles.map((role) => `${role.id}: ${role.title}`),
+            choices: roles,
           },
         ])
         .then((answers) => {
           const roleId = parseInt(answers.role_id.split(':')[0]);
           destroy.role(roleId);
+
           promptMainMenu();
         });
     });
 }
 
+// DELETE EMPLOYEE MENU
 function promptDeleteEmployee(departments) {
   inquirer
     .prompt([
@@ -438,9 +443,7 @@ function promptDeleteEmployee(departments) {
         type: 'list',
         name: 'department_id',
         message: 'Select department of employee to be deleted:',
-        choices: departments.map(
-          (department) => `${department.id}: ${department.name}`
-        ),
+        choices: departments,
       },
     ])
     .then(async (answers) => {
@@ -452,17 +455,17 @@ function promptDeleteEmployee(departments) {
             type: 'list',
             name: 'employee_id',
             message: 'Select employee to be deleted:',
-            choices: employees.map(
-              (employee) => `${employee.id}: ${employee.name}`
-            ),
+            choices: employees,
           },
         ])
         .then((answers) => {
           const employeeId = parseInt(answers.employee_id.split(':')[0]);
           destroy.employee(employeeId);
+
           promptMainMenu();
         });
     });
 }
 
+// BEGIN PROMPTS
 promptMainMenu();

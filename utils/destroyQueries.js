@@ -1,5 +1,9 @@
 const db = require('../db/connection');
+const chalk = require('chalk');
 
+const highlight = chalk.keyword('magenta');
+
+// DELETE DEPARTMENT
 async function department(id) {
   const sql = `delete from departments where id = ?`;
   const params = id;
@@ -8,13 +12,17 @@ async function department(id) {
     .query(sql, params)
     .then(([rows, fields]) => {
       console.log(`
+
 ------------------------------
-Department Deleted from Database
-------------------------------`);
+${highlight('Success!')} Department Deleted from Database
+Press UP or DOWN to return to the Main Menu.
+------------------------------
+`);
     })
     .catch(console.log);
 }
 
+// DELETE ROLE
 async function role(id) {
   const sql = `delete from roles where id = ?`;
   const params = id;
@@ -23,13 +31,17 @@ async function role(id) {
     .query(sql, params)
     .then(([rows, fields]) => {
       console.log(`
+
 ------------------------------
-Role Deleted from Database
-------------------------------`);
+${highlight('Success!')} Role Deleted from Database
+Press UP or DOWN to return to the Main Menu.
+------------------------------
+`);
     })
     .catch(console.log);
 }
 
+// DELETE EMPLOYEE
 async function employee(id) {
   const sql = `delete from employees where id = ?`;
   const params = id;
@@ -38,9 +50,12 @@ async function employee(id) {
     .query(sql, params)
     .then(([rows, fields]) => {
       console.log(`
+
 ------------------------------
-Employee Deleted from Database
-------------------------------`);
+${highlight('Success!')} Employee Deleted from Database
+Press UP or DOWN to return to the Main Menu.
+------------------------------
+`);
     })
     .catch(console.log);
 }

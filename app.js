@@ -3,6 +3,8 @@ const chalk = require('chalk');
 const print = require('./utils/printQueries');
 const insert = require('./utils/insertQueries');
 const get = require('./utils/getListItems');
+const alter = require('./utils/alterQueries');
+const destroy = require('./utils/destroyQueries');
 
 const highlight = chalk.keyword('magenta');
 
@@ -74,6 +76,21 @@ function promptMainMenu() {
           break;
         case 'Add an Employee':
           promptNewEmployee(departments);
+          break;
+        case 'Update Employee Role':
+          promptAlterRole(departments);
+          break;
+        case 'Update Employee Manager':
+          promptAlterManager(departments);
+          break;
+        case 'Delete a Department':
+          promptDeleteDepartment(departments);
+          break;
+        case 'Delete a Role':
+          promptDeleteRole(departments);
+          break;
+        case 'Delete an Employee':
+          promptDeleteEmployee(departments);
           break;
       }
     });
@@ -265,11 +282,187 @@ function promptNewEmployee(departments) {
     });
 }
 
+function promptAlterRole(departments) {
+  let employee_id;
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'id',
+        message: "Enter employee's ID:",
+        validate(id) {
+          if (isNaN(id) || id <= 0) {
+            return 'ID must be an integer.';
+          } else {
+            return true;
+          }
+        },
+      },
+      {
+        type: 'list',
+        name: 'department_id',
+        message: "Enter employee's department:",
+        choices: departments.map(
+          (department) => `${department.id}: ${department.name}`
+        ),
+      },
+    ])
+    .then(async (answers) => {
+      employee_id = answers.id;
+      const department_id = parseInt(answers.department_id.split(':')[0]);
+      const roles = await get.rolesByDepartment(department_id);
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'role_id',
+            message: "Enter employee's new role:",
+            choices: roles.map((role) => `${role.id}: ${role.title}`),
+          },
+        ])
+        .then(({ role_id }) => {
+          alter.role(parseInt(employee_id), parseInt(role_id.split(':')[0]));
+          promptMainMenu();
+        });
+    });
+}
+
+function promptAlterManager(departments) {
+  let employee_id;
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'id',
+        message: "Enter employee's ID:",
+        validate(id) {
+          if (isNaN(id) || id <= 0) {
+            return 'ID must be an integer.';
+          } else {
+            return true;
+          }
+        },
+      },
+      {
+        type: 'list',
+        name: 'department_id',
+        message: "Select employee's department:",
+        choices: departments.map(
+          (department) => `${department.id}: ${department.name}`
+        ),
+      },
+    ])
+    .then(async (answers) => {
+      employee_id = answers.id;
+      const department_id = parseInt(answers.department_id.split(':')[0]);
+      const possibleManagers = await get.employeesByDepartment(department_id);
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'manager_id',
+            message: "Select employee's new manager:",
+            choices: [
+              possibleManagers.map(
+                (manager) => `${manager.id}: ${manager.name}`
+              ),
+              'No manager',
+            ].flat(),
+          },
+        ])
+        .then(({ manager_id }) => {
+          alter.manager(
+            parseInt(employee_id),
+            parseInt(manager_id.split(':')[0])
+          );
+          promptMainMenu();
+        });
+    });
+}
+
+function promptDeleteDepartment(departments) {
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'department_id',
+        message: 'Select department to delete:',
+        choices: departments.map(
+          (department) => `${department.id}: ${department.name}`
+        ),
+      },
+    ])
+    .then((answers) => {
+      const departmentId = parseInt(answers.department_id.split(':')[0]);
+      destroy.department(departmentId);
+      promptMainMenu();
+    });
+}
+
+function promptDeleteRole(departments) {
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'department_id',
+        message: 'Select department of role to be deleted:',
+        choices: departments.map(
+          (department) => `${department.id}: ${department.name}`
+        ),
+      },
+    ])
+    .then(async (answers) => {
+      const departmentId = parseInt(answers.department_id.split(':')[0]);
+      const roles = await get.rolesByDepartment(departmentId);
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'role_id',
+            message: 'Select role to be deleted:',
+            choices: roles.map((role) => `${role.id}: ${role.title}`),
+          },
+        ])
+        .then((answers) => {
+          const roleId = parseInt(answers.role_id.split(':')[0]);
+          destroy.role(roleId);
+          promptMainMenu();
+        });
+    });
+}
+
+function promptDeleteEmployee(departments) {
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'department_id',
+        message: 'Select department of employee to be deleted:',
+        choices: departments.map(
+          (department) => `${department.id}: ${department.name}`
+        ),
+      },
+    ])
+    .then(async (answers) => {
+      const departmentId = parseInt(answers.department_id.split(':')[0]);
+      const employees = await get.employeesByDepartment(departmentId);
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'employee_id',
+            message: 'Select employee to be deleted:',
+            choices: employees.map(
+              (employee) => `${employee.id}: ${employee.name}`
+            ),
+          },
+        ])
+        .then((answers) => {
+          const employeeId = parseInt(answers.employee_id.split(':')[0]);
+          destroy.employee(employeeId);
+          promptMainMenu();
+        });
+    });
+}
+
 promptMainMenu();
-// print.departments();
-// print.roles();
-// print.employees();
-// print.managers();
-// print.employeesByManager(1);
-// print.employeesByDepartment(1);
-// print.totalUtilizedBudget();

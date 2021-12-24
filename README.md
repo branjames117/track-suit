@@ -1,56 +1,45 @@
 # Track Suit
 
-## Employee Tracking with MySQL
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Description
 
-A command-line application that accepts user input with Inquirer
+Track Suit is a CLI Node.js application that connects to a local MySQL database which contains business infrastructure and employee data. The user of the CLI can view, add and delete departments, roles, and employees, as well as make modifications to employee data.
 
-When the application is started, the following options are presented:
+## Table of Contents
 
-- delete a department (bonus)
-  `delete from departments where id = 1`
+- [Installation](#installation)
+- [Usage](#usage)
+- [License](#license)
+- [Contributing](#contributing)
+- [Questions](#questions)
 
-- delete a role (bonus)
-  `delete from roles where id = 1`
-- add an employee
-  `insert into employees(first_name, last_name, role_id, manager_id) values ('James', 'Bond', 1, NULL)`
-- delete an employee (bonus)
-  `delete from employees where id = 1`
-- update an employee role
-  `update employees set role_id = 1 where id = 1`
-- update an employee's manager (bonus)
-  `update employees set manager_id = 1 where id = 1`
+## Installation
 
-When choosing to view all departments, a formatted table is presented showing the department names and ids.
+Download the source files for the application with `git clone <src>`, then install all dependencies with `npm i`.
 
-When choosing to view all roles, a formatted table shows job title, role id, and the department the role belongs to, and the salary for that role.
+## Usage
 
-When choosing to view all employees, a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to.
+In db/connection.js, change the password of the MySQL connection to whatever your local password is. From the MySQL shell, run `source db/db.sql`, then `source db/schema.sql` to create the database architecture. For sample data, run `source db/seeds.sql`. Run the app with `node app`.
 
-When choosing to add a department, then prompt for the name of the department and add that department to the database.
+## License
 
-When choosing to add a role, enter the name, salary, and department for the role and add that role to the database.
+[The MIT License](https://mit-license.org/)
 
-When choosing to add an employee, enter the employee’s first name, last name, role, and manager, and that employee is added to the database.
+Copyright © 2021 branjames117
 
-When updating an employee role, select an employee and update their new role and update this information in the database.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-## Schema
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-Schema should contain the following three tables:
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-- department
-  - id: int primary key
-  - name: varchar(30)
-- role
-  - id: int primary key
-  - title: varchar(30)
-  - salary: decimal
-  - department_id: int
-- employee
-  - id: int primary key
-  - first_name: varchar(30)
-  - last_name: varchar(30)
-  - role_id: int
-  - manager_id: int
+## Contributing
+
+This repository and its contributors follow the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md).
+
+## Questions
+
+This repository was created and is maintained by [branjames117](https://github.com/branjames117).
+
+With any questions email the repository owner at [branjames117@gmail.com](mailto:branjames117@gmail.com).
